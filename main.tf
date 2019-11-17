@@ -23,6 +23,11 @@ locals {
 
   sku_name = "${local.tier_names[var.sku.tier]}_${var.sku.family}_${var.sku.capacity}"
 
+  firewall_rules = [for rule in var.network_rules.ip_rules: {
+    start: cidrhost(rule, 0)
+    end: cidrhost(rule, pow(2, (32 - parseint(split("/", rule)[1], 10))) - 1)
+  }]
+
   diag_pgsql_logs = [
     "PostgreSQLLogs",
     "QueryStoreRuntimeStatistics",
@@ -46,6 +51,10 @@ locals {
     metric             = []
     log                = []
   }
+}
+
+data "http" "myip" {
+  url = "http://ipv4.icanhazip.com"
 }
 
 resource "azurerm_resource_group" "main" {
@@ -130,13 +139,13 @@ resource "azurerm_postgresql_configuration" "main" {
 }
 
 resource "azurerm_postgresql_firewall_rule" "main" {
-  count = length(var.network_rules.ip_rules)
+  count = length(local.firewall_rules)
 
   name                = "netrule_${count.index}"
   resource_group_name = azurerm_resource_group.main.name
   server_name         = azurerm_postgresql_server.main.name
-  start_ip_address    = cidrhost(var.network_rules.ip_rules[count.index], 0)
-  end_ip_address      = cidrhost(var.network_rules.ip_rules[count.index], 1)
+  start_ip_address    = local.firewall_rules[count.index].start
+  end_ip_address      = local.firewall_rules[count.index].end
 }
 
 resource "azurerm_postgresql_firewall_rule" "azure" {
@@ -147,6 +156,16 @@ resource "azurerm_postgresql_firewall_rule" "azure" {
   server_name         = azurerm_postgresql_server.main.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
+}
+
+resource "azurerm_postgresql_firewall_rule" "client" {
+  count = var.network_rules.allow_access_to_azure_services ? 1 : 0
+
+  name                = "terraform_client"
+  resource_group_name = azurerm_resource_group.main.name
+  server_name         = azurerm_postgresql_server.main.name
+  start_ip_address    = chomp(data.http.myip.body)
+  end_ip_address      = chomp(data.http.myip.body)
 }
 
 resource "azurerm_postgresql_virtual_network_rule" "main" {
@@ -200,13 +219,3 @@ resource "postgresql_role" "user" {
   replication     = false
   password        = random_string.user[each.key].result
 }
-
-# resource postgresql_grant "user" {
-#   for_each = local.users_map
-
-#   database    = each.value.db.name
-#   role        = postgresql_role.user[each.key].name
-#   schema      = "public"
-#   object_type = "table"
-#   privileges  = each.value.user.privileges
-# }

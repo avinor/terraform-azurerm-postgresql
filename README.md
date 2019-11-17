@@ -4,6 +4,10 @@ Terraform module to create a PostgreSQL server in Azure with set of databases an
 
 Currently it has some limitations with granting access for users as the PostgreSQL terraform provider does not support granting other privileges than table and sequence in databases. This will be resolved once provider supports this. In the meantime to grant access to databases the administrator needs to connect to database after provisioning and grant correct privileges. Module will create all databases and users, just need to grant privileges.
 
+## Limitations
+
+Due to some limitations in terraform it does not handle the postgresql provider correctly. It will fail on first deployment due to server host does not exist. Only way to fix that now is to comment out the postgresql provider, postgresql resources and postgresql output. Then run first time to create server and comment in other resources and run again.
+
 ## Usage
 
 Example showing deployment of a server with single database using [tau](https://github.com/avinor/tau)
