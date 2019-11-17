@@ -12,7 +12,7 @@ variable "location" {
 
 variable "sku" {
   description = "SKU settings of server, see https://www.terraform.io/docs/providers/azurerm/r/postgresql_server.html for details."
-  type        = object({ name = string, capacity = number, tier = string, family = string })
+  type        = object({ capacity = number, tier = string, family = string })
 }
 
 variable "storage_mb" {

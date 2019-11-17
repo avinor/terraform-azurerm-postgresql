@@ -15,6 +15,14 @@ locals {
   }]])
   users_map = { for user in local.users_flatten : user.user.name => user }
 
+  tier_names = {
+    "Basic": "B",
+    "GeneralPurpose": "GP",
+    "MemoryOptimized": "MO",
+  }
+
+  sku_name = "${local.tier_names[var.sku.tier]}_${var.sku.family}_${var.sku.capacity}"
+
   diag_pgsql_logs = [
     "PostgreSQLLogs",
     "QueryStoreRuntimeStatistics",
@@ -59,7 +67,7 @@ resource "azurerm_postgresql_server" "main" {
   resource_group_name = azurerm_resource_group.main.name
 
   sku {
-    name     = var.sku.name
+    name     = local.sku_name
     capacity = var.sku.capacity
     tier     = var.sku.tier
     family   = var.sku.family
