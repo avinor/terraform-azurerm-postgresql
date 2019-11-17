@@ -48,6 +48,13 @@ Diagnostics settings can be sent to either storage account, event hub or Log Ana
 
 Setting `all` in logs and metrics will send all possible diagnostics to destination. If not using `all` type name of categories to send.
 
+## Grant access
+
+After deployment it have created the server, databases and users (roles), but not granted access. To change the owner of database logon with administrator and run following command to change owner on database called `something`:
+
+1. `GRANT something TO <adminuser>;`
+2. `ALTER DATABASE <database> OWNER TO something;`
+
 ## References
 
 - <https://docs.microsoft.com/en-us/azure/postgresql/howto-create-users>
