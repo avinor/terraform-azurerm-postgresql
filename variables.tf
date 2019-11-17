@@ -39,7 +39,7 @@ variable "storage_auto_grow" {
 
 variable "administrator" {
   description = "Name of administrator user, password is auto generated."
-  default     = "pgsqsladmin"
+  default     = "pgsqladmin"
 }
 
 variable "server_version" {
