@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 0.12.6"
   required_providers {
-    azurerm = "~> 1.36.0"
+    azurerm = "~> 1.44.0"
   }
 }
 
@@ -75,12 +75,8 @@ resource "azurerm_postgresql_server" "main" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  sku {
-    name     = local.sku_name
-    capacity = var.sku.capacity
-    tier     = var.sku.tier
-    family   = var.sku.family
-  }
+
+  sku_name = local.sku_name
 
   storage_profile {
     storage_mb            = var.storage_mb
