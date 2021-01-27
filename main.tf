@@ -34,10 +34,7 @@ locals {
     "QueryStoreWaitStatistics",
   ]
   diag_pgsql_metrics = [
-    "Errors",
-    "Latency",
-    "Saturation",
-    "Traffic",
+    "AllMetrics",
   ]
 
   diag_resource_list = var.diagnostics != null ? split("/", var.diagnostics.destination) : []
