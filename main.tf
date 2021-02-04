@@ -15,6 +15,13 @@ locals {
   }]])
   users_map = { for user in local.users_flatten : user.user.name => user }
 
+  grants = flatten([for db in var.databases : [for user in db.users : [for grant in user.grants : {
+    database : db.name
+    username : user.name
+    object_type : grant.object_type
+    privileges : grant.privileges
+  }]]])
+
   tier_names = {
     "Basic": "B",
     "GeneralPurpose": "GP",
@@ -214,4 +221,14 @@ resource "postgresql_role" "user" {
   inherit         = true
   replication     = false
   password        = random_string.user[each.key].result
+}
+
+resource "postgresql_grant" "user_privileges" {
+  count = length(local.grants)
+
+  database    = local.grants[count.index].database
+  schema      = "public"
+  role        = postgresql_role.user[local.grants[count.index].username].name
+  object_type = local.grants[count.index].object_type
+  privileges  = local.grants[count.index].privileges
 }
