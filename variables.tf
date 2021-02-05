@@ -76,8 +76,11 @@ variable "databases" {
     charset   = string,
     collation = string,
     users = list(object({
-      name       = string,
-      privileges = list(string)
+      name = string,
+      grants = list(object({
+        object_type = string,
+        privileges  = list(string)
+      }))
     }))
   }))
   default = []
