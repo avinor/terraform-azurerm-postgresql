@@ -202,7 +202,7 @@ provider "postgresql" {
   expected_version = var.server_version
 }
 
-resource "random_string" "user" {
+resource "random_password" "user" {
   for_each = local.users_map
 
   length  = 16
@@ -220,7 +220,7 @@ resource "postgresql_role" "user" {
   create_role     = false
   inherit         = true
   replication     = false
-  password        = random_string.user[each.key].result
+  password        = random_password.user[each.key].result
 }
 
 resource "postgresql_grant" "user_privileges" {
