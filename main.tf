@@ -221,6 +221,10 @@ resource "postgresql_role" "user" {
   inherit         = true
   replication     = false
   password        = random_string.user[each.key].result
+
+  depends_on = [
+    azurerm_postgresql_firewall_rule.client
+  ]
 }
 
 resource "postgresql_grant" "user_privileges" {
