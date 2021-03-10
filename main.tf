@@ -1,8 +1,10 @@
 terraform {
   required_version = ">= 0.12.6"
-  required_providers {
-    azurerm = "~> 1.44.0"
-  }
+}
+
+provider "azurerm" {
+  version = "~> 2.50.0"
+  features {}
 }
 
 locals {
@@ -43,6 +45,9 @@ locals {
   diag_pgsql_metrics = [
     "AllMetrics",
   ]
+
+  geo_redundant_backup_enabled = var.geo_redundant_backup == "Enabled" ? true : false
+  auto_grow_enabled            = var.storage_auto_grow == "Enabled" ? true : false
 
   diag_resource_list = var.diagnostics != null ? split("/", var.diagnostics.destination) : []
   parsed_diag = var.diagnostics != null ? {
@@ -85,17 +90,15 @@ resource "azurerm_postgresql_server" "main" {
 
   sku_name = local.sku_name
 
-  storage_profile {
-    storage_mb            = var.storage_mb
-    backup_retention_days = var.backup_retention_days
-    geo_redundant_backup  = var.geo_redundant_backup
-    auto_grow             = var.storage_auto_grow
-  }
+  storage_mb                   = var.storage_mb
+  backup_retention_days        = var.backup_retention_days
+  geo_redundant_backup_enabled = local.geo_redundant_backup_enabled
+  auto_grow_enabled            = local.auto_grow_enabled
 
   administrator_login          = var.administrator
   administrator_login_password = random_string.unique.result
   version                      = var.server_version
-  ssl_enforcement              = "Enabled"
+  ssl_enforcement_enabled      = true
 
   tags = var.tags
 }

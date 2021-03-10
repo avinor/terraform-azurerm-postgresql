@@ -12,6 +12,9 @@ module "simple" {
     family   = "Gen5"
   }
 
+  geo_redundant_backup = "Enabled"
+  storage_auto_grow = "Disabled"
+
   databases = [
     {
       name      = "my_database"
