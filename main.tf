@@ -25,16 +25,16 @@ locals {
   }]]])
 
   tier_names = {
-    "Basic": "B",
-    "GeneralPurpose": "GP",
-    "MemoryOptimized": "MO",
+    "Basic" : "B",
+    "GeneralPurpose" : "GP",
+    "MemoryOptimized" : "MO",
   }
 
   sku_name = "${local.tier_names[var.sku.tier]}_${var.sku.family}_${var.sku.capacity}"
 
-  firewall_rules = [for rule in var.network_rules.ip_rules: {
-    start: cidrhost(rule, 0)
-    end: cidrhost(rule, pow(2, (32 - parseint(split("/", rule)[1], 10))) - 1)
+  firewall_rules = [for rule in var.network_rules.ip_rules : {
+    start : cidrhost(rule, 0)
+    end : cidrhost(rule, pow(2, (32 - parseint(split("/", rule)[1], 10))) - 1)
   }]
 
   diag_pgsql_logs = [
