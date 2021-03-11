@@ -1,8 +1,10 @@
 terraform {
   required_version = ">= 0.12.6"
-  required_providers {
-    azurerm = "~> 1.44.0"
-  }
+}
+
+provider "azurerm" {
+  version = "~> 2.50.0"
+  features {}
 }
 
 locals {
@@ -23,16 +25,16 @@ locals {
   }]]])
 
   tier_names = {
-    "Basic": "B",
-    "GeneralPurpose": "GP",
-    "MemoryOptimized": "MO",
+    "Basic" : "B",
+    "GeneralPurpose" : "GP",
+    "MemoryOptimized" : "MO",
   }
 
   sku_name = "${local.tier_names[var.sku.tier]}_${var.sku.family}_${var.sku.capacity}"
 
-  firewall_rules = [for rule in var.network_rules.ip_rules: {
-    start: cidrhost(rule, 0)
-    end: cidrhost(rule, pow(2, (32 - parseint(split("/", rule)[1], 10))) - 1)
+  firewall_rules = [for rule in var.network_rules.ip_rules : {
+    start : cidrhost(rule, 0)
+    end : cidrhost(rule, pow(2, (32 - parseint(split("/", rule)[1], 10))) - 1)
   }]
 
   diag_pgsql_logs = [
@@ -44,9 +46,12 @@ locals {
     "AllMetrics",
   ]
 
+  geo_redundant_backup_enabled = var.geo_redundant_backup == "Enabled" ? true : false
+  auto_grow_enabled            = var.storage_auto_grow == "Enabled" ? true : false
+
   diag_resource_list = var.diagnostics != null ? split("/", var.diagnostics.destination) : []
   parsed_diag = var.diagnostics != null ? {
-    log_analytics_id   = contains(local.diag_resource_list, "microsoft.operationalinsights") ? var.diagnostics.destination : null
+    log_analytics_id   = contains(local.diag_resource_list, "Microsoft.OperationalInsights") ? var.diagnostics.destination : null
     storage_account_id = contains(local.diag_resource_list, "Microsoft.Storage") ? var.diagnostics.destination : null
     event_hub_auth_id  = contains(local.diag_resource_list, "Microsoft.EventHub") ? var.diagnostics.destination : null
     metric             = contains(var.diagnostics.metrics, "all") ? local.diag_pgsql_metrics : var.diagnostics.metrics
@@ -85,17 +90,15 @@ resource "azurerm_postgresql_server" "main" {
 
   sku_name = local.sku_name
 
-  storage_profile {
-    storage_mb            = var.storage_mb
-    backup_retention_days = var.backup_retention_days
-    geo_redundant_backup  = var.geo_redundant_backup
-    auto_grow             = var.storage_auto_grow
-  }
+  storage_mb                   = var.storage_mb
+  backup_retention_days        = var.backup_retention_days
+  geo_redundant_backup_enabled = local.geo_redundant_backup_enabled
+  auto_grow_enabled            = local.auto_grow_enabled
 
   administrator_login          = var.administrator
   administrator_login_password = random_string.unique.result
   version                      = var.server_version
-  ssl_enforcement              = "Enabled"
+  ssl_enforcement_enabled      = true
 
   tags = var.tags
 }
