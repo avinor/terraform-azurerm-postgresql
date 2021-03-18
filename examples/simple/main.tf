@@ -13,7 +13,7 @@ module "simple" {
   }
 
   geo_redundant_backup = "Enabled"
-  storage_auto_grow = "Disabled"
+  storage_auto_grow    = "Disabled"
 
   databases = [
     {
