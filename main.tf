@@ -37,15 +37,6 @@ locals {
     end : cidrhost(rule, pow(2, (32 - parseint(split("/", rule)[1], 10))) - 1)
   }]
 
-  diag_pgsql_logs = [
-    "PostgreSQLLogs",
-    "QueryStoreRuntimeStatistics",
-    "QueryStoreWaitStatistics",
-  ]
-  diag_pgsql_metrics = [
-    "AllMetrics",
-  ]
-
   geo_redundant_backup_enabled = var.geo_redundant_backup == "Enabled" ? true : false
   auto_grow_enabled            = var.storage_auto_grow == "Enabled" ? true : false
 
@@ -54,8 +45,8 @@ locals {
     log_analytics_id   = contains(local.diag_resource_list, "Microsoft.OperationalInsights") ? var.diagnostics.destination : null
     storage_account_id = contains(local.diag_resource_list, "Microsoft.Storage") ? var.diagnostics.destination : null
     event_hub_auth_id  = contains(local.diag_resource_list, "Microsoft.EventHub") ? var.diagnostics.destination : null
-    metric             = contains(var.diagnostics.metrics, "all") ? local.diag_pgsql_metrics : var.diagnostics.metrics
-    log                = contains(var.diagnostics.logs, "all") ? local.diag_pgsql_logs : var.diagnostics.logs
+    metric             = var.diagnostics.metrics
+    log                = var.diagnostics.logs
     } : {
     log_analytics_id   = null
     storage_account_id = null
@@ -123,7 +114,7 @@ resource "azurerm_monitor_diagnostic_setting" "namespace" {
     for_each = data.azurerm_monitor_diagnostic_categories.default.logs
     content {
       category = log.value
-      enabled  = contains(local.parsed_diag.log, log.value)
+      enabled  = contains(local.parsed_diag.log, "all") || contains(local.parsed_diag.log, log.value)
 
       retention_policy {
         enabled = false
@@ -139,7 +130,7 @@ resource "azurerm_monitor_diagnostic_setting" "namespace" {
     for_each = data.azurerm_monitor_diagnostic_categories.default.metrics
     content {
       category = metric.value
-      enabled  = contains(local.parsed_diag.metric, metric.value)
+      enabled  =  contains(local.parsed_diag.metrics, "all") || contains(local.parsed_diag.metric, metric.value)
 
       retention_policy {
         enabled = false
