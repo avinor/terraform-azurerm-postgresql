@@ -130,7 +130,7 @@ resource "azurerm_monitor_diagnostic_setting" "namespace" {
     for_each = data.azurerm_monitor_diagnostic_categories.default.metrics
     content {
       category = metric.value
-      enabled  =  contains(local.parsed_diag.metrics, "all") || contains(local.parsed_diag.metric, metric.value)
+      enabled  =  contains(local.parsed_diag.metric, "all") || contains(local.parsed_diag.metric, metric.value)
 
       retention_policy {
         enabled = false
