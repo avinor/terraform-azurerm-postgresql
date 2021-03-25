@@ -22,7 +22,8 @@ module "simple" {
       collation = "English_United States.1252"
       users = [
         {
-          name = "a_user"
+          name     = "a_user"
+          password = null
           grants = [
             {
               object_type : "database"

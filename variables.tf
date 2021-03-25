@@ -38,8 +38,13 @@ variable "storage_auto_grow" {
 }
 
 variable "administrator" {
-  description = "Name of administrator user, password is auto generated."
+  description = "Name of administrator user"
   default     = "pgsqladmin"
+}
+
+variable "administrator_password" {
+  description = "Administrator password, auto generated if set to null"
+  default     = null
 }
 
 variable "server_version" {
@@ -70,15 +75,16 @@ variable "network_rules" {
 }
 
 variable "databases" {
-  description = "List of databases and users with access to them. Assigning users require that the provisioner have access to database."
+  description = "List of databases and users with access to them. Assigning users require that the provisioner have access to database. Secret attribute is secret name for a keyvault secret for password, auto generated if null"
   type = list(object({
-    name      = string,
-    charset   = string,
-    collation = string,
+    name      = string
+    charset   = string
+    collation = string
     users = list(object({
-      name = string,
+      name     = string
+      password = string
       grants = list(object({
-        object_type = string,
+        object_type = string
         privileges  = list(string)
       }))
     }))

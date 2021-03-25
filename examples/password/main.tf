@@ -1,8 +1,8 @@
 module "simple" {
   source = "../.."
 
-  name                = "simple"
-  resource_group_name = "simple-postgresql-rg"
+  name                = "password"
+  resource_group_name = "password-postgresql-rg"
   location            = "westeurope"
 
   sku = {
@@ -12,8 +12,9 @@ module "simple" {
     family   = "Gen5"
   }
 
-  geo_redundant_backup = "Enabled"
-  storage_auto_grow    = "Disabled"
+  geo_redundant_backup   = "Enabled"
+  storage_auto_grow      = "Disabled"
+  administrator_password = "secretpassword"
 
   databases = [
     {
@@ -22,8 +23,22 @@ module "simple" {
       collation = "English_United States.1252"
       users = [
         {
-          name = "a_user"
+          name     = "a_user"
           password = null
+          grants = [
+            {
+              object_type : "database"
+              privileges : ["CREATE"]
+            },
+            {
+              object_type : "table"
+              privileges : ["SELECT", "INSERT", "UPDATE"]
+            }
+          ]
+        },
+        {
+          name     = "a_user2"
+          password = "secretpassword"
           grants = [
             {
               object_type : "database"
@@ -38,11 +53,4 @@ module "simple" {
       ]
     },
   ]
-
-  diagnostics = {
-    destination   = "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/my-rg/providers/Microsoft.OperationalInsights/workspaces/my-log-analytics"
-    eventhub_name = null
-    logs          = ["PostgreSQLLogs"]
-    metrics       = ["all"]
-  }
 }
