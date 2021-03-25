@@ -23,6 +23,7 @@ module "simple" {
       users = [
         {
           name = "a_user"
+          password = null
           grants = [
             {
               object_type : "database"
