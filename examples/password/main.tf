@@ -1,8 +1,8 @@
 module "simple" {
   source = "../.."
 
-  name                = "simple"
-  resource_group_name = "simple-postgresql-rg"
+  name                = "password"
+  resource_group_name = "password-postgresql-rg"
   location            = "westeurope"
 
   sku = {
@@ -38,7 +38,7 @@ module "simple" {
         },
         {
           name     = "a_user2"
-          password = "myscecretpassword"
+          password = "secretpassword"
           grants = [
             {
               object_type : "database"

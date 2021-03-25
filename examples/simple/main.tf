@@ -1,8 +1,8 @@
 module "simple" {
   source = "../.."
 
-  name                = "password"
-  resource_group_name = "password-postgresql-rg"
+  name                = "simple"
+  resource_group_name = "simple-postgresql-rg"
   location            = "westeurope"
 
   sku = {
