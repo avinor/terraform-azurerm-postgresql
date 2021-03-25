@@ -91,7 +91,7 @@ resource "azurerm_postgresql_server" "main" {
   auto_grow_enabled            = local.auto_grow_enabled
 
   administrator_login          = var.administrator
-  administrator_login_password = random_string.unique.result
+  administrator_login_password = var.administrator_password != null ? var.administrator_password : random_string.unique.result
   version                      = var.server_version
   ssl_enforcement_enabled      = true
 
@@ -134,7 +134,7 @@ resource "azurerm_monitor_diagnostic_setting" "namespace" {
     for_each = data.azurerm_monitor_diagnostic_categories.default.metrics
     content {
       category = metric.value
-      enabled  =  contains(local.parsed_diag.metric, "all") || contains(local.parsed_diag.metric, metric.value)
+      enabled  = contains(local.parsed_diag.metric, "all") || contains(local.parsed_diag.metric, metric.value)
 
       retention_policy {
         enabled = false
@@ -232,7 +232,7 @@ resource "postgresql_role" "user" {
   create_role     = false
   inherit         = true
   replication     = false
-  password        = random_string.user[each.key].result
+  password        = each.value.user.password != null ? each.value.user.password : random_string.user[each.key].result
 
   depends_on = [
     azurerm_postgresql_firewall_rule.client

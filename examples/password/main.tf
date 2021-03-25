@@ -1,8 +1,8 @@
 module "simple" {
   source = "../.."
 
-  name                = "password"
-  resource_group_name = "password-postgresql-rg"
+  name                = "simple"
+  resource_group_name = "simple-postgresql-rg"
   location            = "westeurope"
 
   sku = {
@@ -12,8 +12,9 @@ module "simple" {
     family   = "Gen5"
   }
 
-  geo_redundant_backup = "Enabled"
-  storage_auto_grow    = "Disabled"
+  geo_redundant_backup   = "Enabled"
+  storage_auto_grow      = "Disabled"
+  administrator_password = "secretpassword"
 
   databases = [
     {
@@ -24,6 +25,20 @@ module "simple" {
         {
           name     = "a_user"
           password = null
+          grants = [
+            {
+              object_type : "database"
+              privileges : ["CREATE"]
+            },
+            {
+              object_type : "table"
+              privileges : ["SELECT", "INSERT", "UPDATE"]
+            }
+          ]
+        },
+        {
+          name     = "a_user2"
+          password = "myscecretpassword"
           grants = [
             {
               object_type : "database"
