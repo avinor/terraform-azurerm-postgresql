@@ -12,7 +12,11 @@ variable "location" {
 
 variable "sku" {
   description = "SKU settings of server, see https://www.terraform.io/docs/providers/azurerm/r/postgresql_server.html for details."
-  type        = object({ capacity = number, tier = string, family = string })
+  type = object({
+    capacity = number
+    tier     = string
+    family   = string
+  })
 }
 
 variable "storage_mb" {
@@ -60,13 +64,22 @@ variable "configuration" {
 
 variable "diagnostics" {
   description = "Diagnostic settings for those resources that support it. See README.md for details on configuration."
-  type        = object({ destination = string, eventhub_name = string, logs = list(string), metrics = list(string) })
-  default     = null
+  type = object({
+    destination   = string
+    eventhub_name = string
+    logs          = list(string)
+    metrics       = list(string)
+  })
+  default = null
 }
 
 variable "network_rules" {
-  description = "Network rules restricing access to the postgresql server."
-  type        = object({ ip_rules = list(string), subnet_ids = list(string), allow_access_to_azure_services = bool })
+  description = "Network rules restricting access to the postgresql server."
+  type = object({
+    ip_rules                       = list(string)
+    subnet_ids                     = list(string)
+    allow_access_to_azure_services = bool
+  })
   default = {
     ip_rules                       = []
     subnet_ids                     = []
@@ -75,7 +88,7 @@ variable "network_rules" {
 }
 
 variable "databases" {
-  description = "List of databases and users with access to them. Assigning users require that the provisioner have access to database. Secret attribute is secret name for a keyvault secret for password, auto generated if null"
+  description = "List of databases and users with access to them. Assigning users require that the provisioner have access to database. Password is auto generated if null"
   type = list(object({
     name      = string
     charset   = string

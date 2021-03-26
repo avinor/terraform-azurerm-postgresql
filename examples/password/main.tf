@@ -6,7 +6,6 @@ module "simple" {
   location            = "westeurope"
 
   sku = {
-    name     = "B_Gen5_1"
     capacity = 1
     tier     = "Basic"
     family   = "Gen5"

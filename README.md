@@ -4,16 +4,18 @@ Terraform module to create a PostgreSQL server in Azure with set of databases an
 
 ## Limitations
 
-Due to some limitations in terraform it does not handle the postgresql provider correctly. It will fail on first deployment due to server host does not exist. Only way to fix that now is to comment out the postgresql provider, postgresql resources and postgresql output. Then run first time to create server and comment in other resources and run again.
+Password is mandatory for database users. Set to null for auto generated password.
 
 ## Usage
+
+Examples of usage for this terraform module can be found under the example directory.
 
 Example showing deployment of a server with single database using [tau](https://github.com/avinor/tau)
 
 ```terraform
 module {
   source  = "avinor/postgresql/azurerm"
-  version = "1.0.0"
+  version = "2.0.4"
 }
 
 inputs {
@@ -22,7 +24,6 @@ inputs {
   location            = "westeurope"
 
   sku = {
-    name     = "B_Gen5_1"
     capacity = 1
     tier     = "Basic"
     family   = "Gen5"
@@ -35,7 +36,8 @@ inputs {
       collation = "English_United States.1252"
       users = [
         {
-          name = "a_user"
+          name     = "a_user"
+          password = null
           grants = [
             {
               object_type : "database"

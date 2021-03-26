@@ -6,7 +6,6 @@ module "simple" {
   location            = "westeurope"
 
   sku = {
-    name     = "B_Gen5_1"
     capacity = 1
     tier     = "Basic"
     family   = "Gen5"
@@ -22,7 +21,7 @@ module "simple" {
       collation = "English_United States.1252"
       users = [
         {
-          name = "a_user"
+          name     = "a_user"
           password = null
           grants = [
             {
