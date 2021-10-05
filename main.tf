@@ -3,18 +3,18 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 2.51.0"
+      version = "~> 2.79.0"
     }
     http = {
-      source = "hashicorp/http"
+      source  = "hashicorp/http"
       version = "~> 2.1.0"
     }
     postgresql = {
-      source = "cyrilgdn/postgresql"
+      source  = "cyrilgdn/postgresql"
       version = "~> 1.12.0"
     }
     random = {
-      source = "hashicorp/random"
+      source  = "hashicorp/random"
       version = "~> 3.1.0"
     }
   }
@@ -260,4 +260,8 @@ resource "postgresql_grant" "user_privileges" {
   role        = postgresql_role.user[local.grants[count.index].username].name
   object_type = local.grants[count.index].object_type
   privileges  = local.grants[count.index].privileges
+
+  depends_on = [
+    azurerm_postgresql_firewall_rule.client
+  ]
 }
