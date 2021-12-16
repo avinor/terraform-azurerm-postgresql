@@ -228,7 +228,7 @@ provider "postgresql" {
   superuser        = false
   connect_timeout  = 15
   expected_version = var.server_version
-  max_connections = 1
+  max_connections  = 1
 }
 
 resource "random_string" "user" {
