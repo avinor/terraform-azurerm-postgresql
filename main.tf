@@ -242,14 +242,15 @@ resource "random_string" "user" {
 resource "postgresql_role" "user" {
   for_each = local.users_map
 
-  name            = each.key
-  login           = true
-  superuser       = false
-  create_database = false
-  create_role     = false
-  inherit         = true
-  replication     = false
-  password        = each.value.user.password != null ? each.value.user.password : random_string.user[each.key].result
+  name                = each.key
+  login               = true
+  superuser           = false
+  create_database     = false
+  create_role         = false
+  inherit             = true
+  replication         = false
+  skip_reassign_owned = true
+  password            = each.value.user.password != null ? each.value.user.password : random_string.user[each.key].result
 
   depends_on = [
     azurerm_postgresql_firewall_rule.client
