@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 2.83.0"
+      version = "~> 2.89.0"
     }
     http = {
       source  = "hashicorp/http"
@@ -11,7 +11,7 @@ terraform {
     }
     postgresql = {
       source  = "cyrilgdn/postgresql"
-      version = "~> 1.12.0"
+      version = "~> 1.14.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -95,7 +95,6 @@ resource "azurerm_postgresql_server" "main" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-
   sku_name = local.sku_name
 
   storage_mb                   = var.storage_mb
@@ -109,6 +108,10 @@ resource "azurerm_postgresql_server" "main" {
   ssl_enforcement_enabled      = true
 
   tags = var.tags
+
+  lifecycle {
+    ignore_changes = [threat_detection_policy]
+  }
 }
 
 data "azurerm_monitor_diagnostic_categories" "default" {
@@ -225,6 +228,7 @@ provider "postgresql" {
   superuser        = false
   connect_timeout  = 15
   expected_version = var.server_version
+  max_connections = 1
 }
 
 resource "random_string" "user" {
@@ -255,7 +259,7 @@ resource "postgresql_role" "user" {
 resource "postgresql_grant" "user_privileges" {
   count = length(local.grants)
 
-  database    = local.grants[count.index].database
+  database    = azurerm_postgresql_database.main[local.grants[count.index].database].name
   schema      = "public"
   role        = postgresql_role.user[local.grants[count.index].username].name
   object_type = local.grants[count.index].object_type
