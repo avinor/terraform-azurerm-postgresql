@@ -32,14 +32,21 @@ locals {
       db : db
       user : user
   }]])
+
   users_map = { for user in local.users_flatten : user.user.name => user }
 
-  grants = flatten([for db in var.databases : [for user in db.users : [for grant in user.grants : {
-    database : db.name
-    username : user.name
-    object_type : grant.object_type
-    privileges : grant.privileges
-  }]]])
+  grants = flatten([
+    for db in var.databases : [
+      for user in db.users : [
+        for grant in user.grants : {
+          database : db.name
+          username : user.name
+          object_type : grant.object_type
+          privileges : grant.privileges
+        }
+      ]
+    ]
+  ])
 
   tier_names = {
     "Basic" : "B",
