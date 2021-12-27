@@ -10,7 +10,7 @@ output "fqdn" {
 
 output "adminpassword" {
   description = "Admin password for the server."
-  value       = random_string.unique.result
+  value       = random_password.unique.result
   sensitive   = true
 }
 

@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 2.89.0"
+      version = "~> 2.90.0"
     }
     http = {
       source  = "hashicorp/http"
@@ -27,11 +27,14 @@ provider "azurerm" {
 locals {
   databases_map = { for db in var.databases : db.name => db }
 
-  users_flatten = flatten([for db in var.databases :
-    [for user in db.users : {
-      db : db
-      user : user
-  }]])
+  users_flatten = flatten([
+    for db in var.databases : [
+      for user in db.users : {
+        db : db
+        user : user
+      }
+    ]
+  ])
 
   users_map = { for user in local.users_flatten : user.user.name => user }
 
@@ -91,7 +94,7 @@ resource "azurerm_resource_group" "main" {
   tags = var.tags
 }
 
-resource "random_string" "unique" {
+resource "random_password" "unique" {
   length  = 16
   special = true
   upper   = true
@@ -110,7 +113,7 @@ resource "azurerm_postgresql_server" "main" {
   auto_grow_enabled            = local.auto_grow_enabled
 
   administrator_login          = var.administrator
-  administrator_login_password = var.administrator_password != null ? var.administrator_password : random_string.unique.result
+  administrator_login_password = var.administrator_password != null ? var.administrator_password : random_password.unique.result
   version                      = var.server_version
   ssl_enforcement_enabled      = true
 
@@ -230,7 +233,7 @@ provider "postgresql" {
   host             = azurerm_postgresql_server.main.fqdn
   port             = 5432
   username         = "${var.administrator}@${azurerm_postgresql_server.main.name}"
-  password         = random_string.unique.result
+  password         = random_password.unique.result
   sslmode          = "require"
   superuser        = false
   connect_timeout  = 15
@@ -238,7 +241,7 @@ provider "postgresql" {
   max_connections  = 1
 }
 
-resource "random_string" "user" {
+resource "random_password" "user" {
   for_each = local.users_map
 
   length  = 16
@@ -257,7 +260,9 @@ resource "postgresql_role" "user" {
   inherit             = true
   replication         = false
   skip_reassign_owned = true
-  password            = each.value.user.password != null ? each.value.user.password : random_string.user[each.key].result
+  roles               = []
+  search_path         = []
+  password            = each.value.user.password != null ? each.value.user.password : random_password.user[each.key].result
 
   depends_on = [
     azurerm_postgresql_firewall_rule.client
@@ -265,15 +270,15 @@ resource "postgresql_role" "user" {
 }
 
 resource "postgresql_grant" "user_privileges" {
-  count = length(local.grants)
+  for_each = { for g in local.grants : "${g.database}-${g.username}-${g.object_type}" => g }
 
-  database    = azurerm_postgresql_database.main[local.grants[count.index].database].name
+  database    = azurerm_postgresql_database.main[each.value.database].name
   schema      = "public"
-  role        = postgresql_role.user[local.grants[count.index].username].name
-  object_type = local.grants[count.index].object_type
-  privileges  = local.grants[count.index].privileges
+  role        = postgresql_role.user[each.value.username].name
+  object_type = each.value.object_type
+  privileges  = each.value.privileges
 
   depends_on = [
-    azurerm_postgresql_firewall_rule.client
+    azurerm_postgresql_firewall_rule.client,
   ]
 }
