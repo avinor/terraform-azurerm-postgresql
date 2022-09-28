@@ -3,19 +3,19 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 2.89.0"
+      version = "~> 3.24.0"
     }
     http = {
       source  = "hashicorp/http"
-      version = "~> 2.1.0"
+      version = "~> 3.1.0"
     }
     postgresql = {
       source  = "cyrilgdn/postgresql"
-      version = "~> 1.14.0"
+      version = "~> 1.17.1"
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.1.0"
+      version = "~> 3.4.3"
     }
   }
 }
@@ -109,10 +109,11 @@ resource "azurerm_postgresql_server" "main" {
   geo_redundant_backup_enabled = local.geo_redundant_backup_enabled
   auto_grow_enabled            = local.auto_grow_enabled
 
-  administrator_login          = var.administrator
-  administrator_login_password = var.administrator_password != null ? var.administrator_password : random_string.unique.result
-  version                      = var.server_version
-  ssl_enforcement_enabled      = true
+  administrator_login              = var.administrator
+  administrator_login_password     = var.administrator_password != null ? var.administrator_password : random_string.unique.result
+  version                          = var.server_version
+  ssl_enforcement_enabled          = true
+  ssl_minimal_tls_version_enforced = "TLSEnforcementDisabled"
 
   tags = var.tags
 
@@ -138,7 +139,7 @@ resource "azurerm_monitor_diagnostic_setting" "namespace" {
   # All other categories are created with enabled = false to prevent TF from showing changes happening with each plan/apply.
   # Ref: https://github.com/terraform-providers/terraform-provider-azurerm/issues/7235
   dynamic "log" {
-    for_each = data.azurerm_monitor_diagnostic_categories.default.logs
+    for_each = data.azurerm_monitor_diagnostic_categories.default.log_category_types
     content {
       category = log.value
       enabled  = contains(local.parsed_diag.log, "all") || contains(local.parsed_diag.log, log.value)
@@ -202,8 +203,8 @@ resource "azurerm_postgresql_firewall_rule" "client" {
   name                = "terraform_client"
   resource_group_name = azurerm_resource_group.main.name
   server_name         = azurerm_postgresql_server.main.name
-  start_ip_address    = chomp(data.http.myip.body)
-  end_ip_address      = chomp(data.http.myip.body)
+  start_ip_address    = chomp(data.http.myip.response_body)
+  end_ip_address      = chomp(data.http.myip.response_body)
 }
 
 resource "azurerm_postgresql_virtual_network_rule" "main" {
