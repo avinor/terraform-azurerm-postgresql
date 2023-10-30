@@ -138,11 +138,13 @@ resource "azurerm_monitor_diagnostic_setting" "namespace" {
   # For each available log category, check if it should be enabled and set enabled = true if it should.
   # All other categories are created with enabled = false to prevent TF from showing changes happening with each plan/apply.
   # Ref: https://github.com/terraform-providers/terraform-provider-azurerm/issues/7235
-  dynamic "log" {
-    for_each = data.azurerm_monitor_diagnostic_categories.default.log_category_types
+  dynamic "enabled_log" {
+    for_each = {
+      for k, v in data.azurerm_monitor_diagnostic_categories.default.log_category_types : k => v
+      if contains(local.parsed_diag.log, "all") || contains(local.parsed_diag.log, v)
+    }
     content {
-      category = log.value
-      enabled  = contains(local.parsed_diag.log, "all") || contains(local.parsed_diag.log, log.value)
+      category = enabled_log.value
 
       retention_policy {
         enabled = false
