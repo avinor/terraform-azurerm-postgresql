@@ -3,19 +3,19 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.69.0"
+      version = "~> 3.89.0"
     }
     http = {
       source  = "hashicorp/http"
-      version = "~> 3.1.0"
+      version = "~> 3.4.1"
     }
     postgresql = {
       source  = "cyrilgdn/postgresql"
-      version = "~> 1.17.1"
+      version = "~> 1.21.0"
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.4.3"
+      version = "~> 3.6.0"
     }
   }
 }
@@ -145,11 +145,6 @@ resource "azurerm_monitor_diagnostic_setting" "namespace" {
     }
     content {
       category = enabled_log.value
-
-      retention_policy {
-        enabled = false
-        days    = 0
-      }
     }
   }
 
@@ -161,11 +156,6 @@ resource "azurerm_monitor_diagnostic_setting" "namespace" {
     content {
       category = metric.value
       enabled  = contains(local.parsed_diag.metric, "all") || contains(local.parsed_diag.metric, metric.value)
-
-      retention_policy {
-        enabled = false
-        days    = 0
-      }
     }
   }
 }
